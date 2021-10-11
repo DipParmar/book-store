@@ -1,6 +1,6 @@
 # book-store
 
-<h2>Commit Insturctions</h2>
+<h2>Commit Instructions</h2>
 
  - All commits message should be in lower case only
  - Use appropriate tags from below to commit
