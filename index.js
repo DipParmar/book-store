@@ -1,11 +1,18 @@
 require('dotenv').config();
 const mongoose = require('mongoose');
 const express = require('express');
+const morgan = require('morgan');
+const cookieParser = require('cookie-parser');
 const routes = require('./routes/index');
 
 const app = express();
 const port = process.env.PORT || 3000;
 const dbURI = process.env.DB;
+
+// middlewares
+app.use(morgan('dev'));
+app.use(express.json());
+app.use(cookieParser());
 
 // routes configuration
 routes.forEach(({ prefix = '', route }) => {

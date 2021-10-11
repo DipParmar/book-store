@@ -1,6 +1,6 @@
 module.exports = [
   {
-    prefix: '/',
+    prefix: '/api',
     route: require('./user'),
   },
 ];
