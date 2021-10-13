@@ -1,5 +1,5 @@
 const express = require('express');
-const { signup, signin, signout, requireSignin } = require('../controllers/user');
+const { signup, signin, signout, requireSignin } = require('../controllers/auth');
 const { userSignupValidator } = require('../validators');
 const router = express.Router();
 
