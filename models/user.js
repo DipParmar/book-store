@@ -43,7 +43,7 @@ userSchema
   .set(function (password) {
     this._password = password;
     this.salt = uuid();
-    this.hashed_password = this.encryptPassword(password, this.salt);
+    this.hashed_password = this.encryptPassword(password);
   })
   .get(function () {
     return this._password;
@@ -51,14 +51,17 @@ userSchema
 
 // virtual method
 userSchema.methods = {
-  encryptPassword: (password, salt) => {
+  encryptPassword: function (password) {
     if (password) {
       try {
-        return crypto.createHmac('sha1', salt).update(password).digest('hex');
+        return crypto.createHmac('sha1', this.salt).update(password).digest('hex');
       } catch (e) {
         return '';
       }
     }
+  },
+  authenticate: function (password) {
+    return this.encryptPassword(password) === this.hashed_password;
   },
 };
 

@@ -1,6 +1,7 @@
 require('dotenv').config();
 const mongoose = require('mongoose');
 const express = require('express');
+const expressValidator = require('express-validator');
 const morgan = require('morgan');
 const cookieParser = require('cookie-parser');
 const routes = require('./routes/index');
@@ -13,6 +14,7 @@ const dbURI = process.env.DB;
 app.use(morgan('dev'));
 app.use(express.json());
 app.use(cookieParser());
+app.use(expressValidator());
 
 // routes configuration
 routes.forEach(({ prefix = '', route }) => {
