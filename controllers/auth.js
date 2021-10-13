@@ -32,7 +32,7 @@ const signin = (req, res) => {
       });
     }
 
-    const token = jwt.sign({ id: user._id }, process.env.JWT_SEC);
+    const token = jwt.sign({ _id: user._id }, process.env.JWT_SEC);
     res.cookie('t', token, { expire: new Date() + 9999 });
 
     const { _id, name, email, role } = user;
@@ -48,12 +48,34 @@ const signout = (req, res) => {
 const requireSignin = expressJwt({
   secret: process.env.JWT_SEC,
   algorithms: ['HS256'],
-  authuserProperty: 'auth',
+  userProperty: 'auth',
 });
+
+const isAuth = (req, res, next) => {
+  let user = req.profile && req.auth && req.profile._id == req.auth._id;
+  if (!user) {
+    return res.status(403).json({
+      error: 'Access denied',
+    });
+  }
+  next();
+};
+
+const isAdmin = (req, res, next) => {
+  let isAdmin = req.profile.role === 1;
+  if (!isAdmin) {
+    return res.status(403).json({
+      error: 'Admin resource! Access denied',
+    });
+  }
+  next();
+};
 
 module.exports = {
   signup,
   signin,
   signout,
   requireSignin,
+  isAuth,
+  isAdmin,
 };
