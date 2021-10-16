@@ -1,5 +1,6 @@
 const jwt = require('jsonwebtoken');
 const expressJwt = require('express-jwt');
+const { StatusCodes, ReasonPhrases } = require('http-status-codes');
 const User = require('../models/user');
 const { errorHandler } = require('../helpers/dbErrorHandler');
 
@@ -7,7 +8,7 @@ const signup = (req, res) => {
   const user = new User(req.body);
   user.save((err, user) => {
     if (err) {
-      return res.status(400).json({ err: errorHandler(err) });
+      return res.status(StatusCodes.BAD_REQUEST).json({ err: errorHandler(err) });
     } else {
       user.salt = undefined;
       user.hashed_password = undefined;
@@ -21,14 +22,14 @@ const signin = (req, res) => {
 
   User.findOne({ email }, (err, user) => {
     if (err || !user) {
-      return res.status(400).json({
+      return res.status(StatusCodes.BAD_REQUEST).json({
         error: 'User with that email does not exist, please sign up',
       });
     }
 
     if (!user.authenticate(password)) {
-      return res.status(401).json({
-        error: 'Please enter correct credentials',
+      return res.status(StatusCodes.UNAUTHORIZED).json({
+        error: ReasonPhrases.UNAUTHORIZED,
       });
     }
 
@@ -54,7 +55,7 @@ const requireSignin = expressJwt({
 const isAuth = (req, res, next) => {
   let user = req.profile && req.auth && req.profile._id == req.auth._id;
   if (!user) {
-    return res.status(403).json({
+    return res.status(StatusCodes.FORBIDDEN).json({
       error: 'Access denied',
     });
   }
@@ -64,7 +65,7 @@ const isAuth = (req, res, next) => {
 const isAdmin = (req, res, next) => {
   let isAdmin = req.profile.role === 1;
   if (!isAdmin) {
-    return res.status(403).json({
+    return res.status(StatusCodes.FORBIDDEN).json({
       error: 'Admin resource! Access denied',
     });
   }
