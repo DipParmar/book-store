@@ -1,3 +1,5 @@
+const { StatusCodes, ReasonPhrases } = require('http-status-codes');
+
 const userSignupValidator = (req, res, next) => {
   req.check('name', 'Name is required').notEmpty();
   req
@@ -18,7 +20,7 @@ const userSignupValidator = (req, res, next) => {
   const errors = req.validationErrors();
   if (errors) {
     const firstError = errors.map((err) => err.msg)[0];
-    return res.status(400).json({ error: firstError });
+    return res.status(StatusCodes.BAD_REQUEST).json({ error: firstError });
   }
   next();
 };
