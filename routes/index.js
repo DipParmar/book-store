@@ -11,4 +11,8 @@ module.exports = [
     prefix: '/api/category',
     route: require('./category'),
   },
+  {
+    prefix: '/api/product',
+    route: require('./product'),
+  },
 ];
