@@ -4,6 +4,7 @@ const express = require('express');
 const expressValidator = require('express-validator');
 const morgan = require('morgan');
 const cookieParser = require('cookie-parser');
+const cors = require('cors');
 const routes = require('./routes/index');
 
 const app = express();
@@ -15,6 +16,7 @@ app.use(morgan('dev'));
 app.use(express.json());
 app.use(cookieParser());
 app.use(expressValidator());
+app.use(cors());
 
 // routes configuration
 routes.forEach(({ prefix = '', route }) => {
