@@ -108,6 +108,103 @@ const remove = (req, res) => {
   });
 };
 
+const list = (req, res) => {
+  const order = req.query.order ? req.query.order : 'asc';
+  const sortBy = req.query.sortBy ? req.query.sortBy : 'name';
+  const limit = req.query.limit ? parseInt(req.query.limit) : 10;
+
+  const MAX_LIMIT = 50;
+
+  Product.find()
+    .select('-photo')
+    .populate('category')
+    .sort([[sortBy, order]])
+    .limit(Math.min(limit, MAX_LIMIT))
+    .exec((err, products) => {
+      if (err) {
+        return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+          error: 'No products are available',
+        });
+      }
+      res.json(products);
+    });
+};
+
+const listRelated = (req, res) => {
+  const limit = req.query.limit ? parseInt(req.query.limit) : 10;
+
+  Product.find({ _id: { $ne: req.product }, category: req.product.category })
+    .limit(limit)
+    .populate('category', '_id name')
+    .exec((err, products) => {
+      if (err) {
+        return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+          error: 'No related products are available',
+        });
+      }
+      res.json(products);
+    });
+};
+
+const listCategories = (req, res) => {
+  Product.distinct('category', {}, (err, categories) => {
+    if (err) {
+      return res.status(StatusCodes.BAD_REQUEST).json({
+        error: 'Categories not found.',
+      });
+    }
+    res.json(categories);
+  });
+};
+
+const listBySearch = (req, res) => {
+  const order = req.body.order ? req.body.order : 'desc';
+  const sortBy = req.body.sortBy ? req.body.sortBy : '_id';
+  const limit = req.body.limit ? parseInt(req.body.limit) : 100;
+  const skip = parseInt(req.body.skip);
+  const findArgs = {};
+
+  console.log(req.body.filters);
+  for (let key in req.body.filters) {
+    if (req.body.filters[key].length > 0) {
+      if (key === 'price') {
+        findArgs[key] = {
+          $gte: req.body.filters[key][0],
+          $lte: req.body.filters[key][1],
+        };
+      } else {
+        findArgs[key] = req.body.filters[key];
+      }
+    }
+  }
+
+  Product.find(findArgs)
+    .select('-photo')
+    .populate('category')
+    .sort([[sortBy, order]])
+    .skip(skip)
+    .limit(limit)
+    .exec((err, products) => {
+      if (err) {
+        return res.status(400).json({
+          error: 'Products not found',
+        });
+      }
+      res.json({
+        size: products.length,
+        products,
+      });
+    });
+};
+
+const getPhoto = (req, res, next) => {
+  if (req.product.photo.data) {
+    res.set('Content-Type', req.product.photo.contentType);
+    return res.send(req.product.photo.data);
+  }
+  next();
+};
+
 const productById = (req, res, next, id) => {
   Product.findById(id).exec((err, product) => {
     if (err || !product) {
@@ -123,7 +220,12 @@ const productById = (req, res, next, id) => {
 module.exports = {
   create,
   read,
-  productById,
-  remove,
   update,
+  remove,
+  list,
+  listRelated,
+  listCategories,
+  listBySearch,
+  getPhoto,
+  productById,
 };
