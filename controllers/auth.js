@@ -33,8 +33,9 @@ const signin = (req, res) => {
       });
     }
 
-    const token = jwt.sign({ _id: user._id }, process.env.JWT_SEC);
-    res.cookie('t', token, { expire: new Date() + 9999 });
+    const ONE_HOUR = 1000 * 60 * 60;
+    const token = jwt.sign({ _id: user._id }, process.env.JWT_SEC, { expiresIn: ONE_HOUR });
+    res.cookie('t', token, { expire: new Date(Date.now() * ONE_HOUR), httpOnly: true });
 
     const { _id, name, email, role } = user;
     return res.json({ token, user: { _id, name, email, role } });
