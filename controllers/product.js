@@ -164,6 +164,7 @@ const listBySearch = (req, res) => {
   const skip = parseInt(req.body.skip);
   const findArgs = {};
 
+  console.log(req.body);
   console.log(req.body.filters);
   for (let key in req.body.filters) {
     if (req.body.filters[key].length > 0) {
@@ -205,11 +206,31 @@ const getPhoto = (req, res, next) => {
   next();
 };
 
+const listSearch = (req, res) => {
+  const query = {};
+
+  if (req.query.search) {
+    query.name = { $regex: req.query.search, $options: 'i' };
+    if (req.query.category && req.query.category !== 'All') {
+      query.category = req.query.category;
+    }
+
+    Product.find(query, (err, products) => {
+      if (err) {
+        return res.status(StatusCodes.BAD_REQUEST).json({
+          error: errorHandler(err),
+        });
+      }
+      res.json(products);
+    }).select('-photo');
+  }
+};
+
 const productById = (req, res, next, id) => {
   Product.findById(id).exec((err, product) => {
     if (err || !product) {
       return res.status(StatusCodes.BAD_REQUEST).json({
-        error: 'Product not found`',
+        error: 'Product not found',
       });
     }
     req.product = product;
@@ -227,5 +248,6 @@ module.exports = {
   listCategories,
   listBySearch,
   getPhoto,
+  listSearch,
   productById,
 };
